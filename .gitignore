@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Packaging
+*.egg-info/
+dist/
+build/
+
+# Pytest
+.pytest_cache/
+
+# Mypy
+.mypy_cache/
+
+# VS Code
+.vscode/
+
+# JetBrains
+.idea/
+
+# Byte-compiled
+*.so
+
+# Local env files
+.env
+env.local
+
+# Logs
+*.log
+
+# Playwright artifacts
+playwright-report/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+.env
+
+# Editor
+.vscode/
+.idea/
+
+# Playwright artifacts
+playwright_debug.png
+playwright_login.log
+
+# OS
+.DS_Store
+Thumbs.db
