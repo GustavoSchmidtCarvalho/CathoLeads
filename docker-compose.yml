@@ -1,0 +1,12 @@
+services:
+  catholeads:
+    image: gustascarvalho/catho_leads:latest
+    build: .
+    container_name: catholeads
+    volumes:
+      # Config (não bakeia credenciais na imagem)
+      - ./config:/app/config:ro
+      # Saída gerada (JSON/CSV/Excel, screenshots, logs)
+      - ./output:/app/output
+    # Importante: no Docker, use headless=true no config/config.json
+    # command: ["python", "-u", "src/catho_leads.py"]

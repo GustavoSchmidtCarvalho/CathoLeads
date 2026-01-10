@@ -91,6 +91,71 @@ O script salva os resultados em `output/candidates/`:
 
 ---
 
+## Alternativa: executar via Docker (somente headless)
+
+Esta opção facilita rodar em outro computador sem instalar Python/venv localmente. Você só precisa ter **Docker** instalado.
+
+Recomendação:
+- No [config/config.json](config/config.json), deixe `"headless": true`.
+
+### Usando a imagem do Docker Hub (repositório público)
+
+Se você só quer executar em outro computador (sem build local), use a imagem já publicada:
+
+1) Crie as pastas `config/` e `output/` e coloque o seu `config.json` dentro de `config/`.
+
+2) Baixe a imagem:
+```bash
+docker pull gustascarvalho/catho_leads:latest
+```
+
+3) Execute montando `config` e `output`:
+
+Windows (PowerShell):
+```powershell
+docker run --rm `
+  -v "${PWD}\config:/app/config:ro" `
+  -v "${PWD}\output:/app/output" `
+  gustascarvalho/catho_leads:latest
+```
+
+Linux/macOS (bash/zsh):
+```bash
+docker run --rm \
+  -v "$(pwd)/config:/app/config:ro" \
+  -v "$(pwd)/output:/app/output" \
+  gustascarvalho/catho_leads:latest
+```
+
+### Usando Docker Compose (recomendado)
+
+Na raiz do projeto:
+```bash
+docker compose build
+docker compose run --rm catholeads
+```
+
+Os volumes já estão configurados em [docker-compose.yml](docker-compose.yml):
+- `./config` é montado em `/app/config` (somente leitura)
+- `./output` é montado em `/app/output`
+
+### Usando docker run (sem Compose)
+
+Build:
+```bash
+docker build -t catho_leads:latest .
+```
+
+Run:
+```bash
+docker run --rm \
+  -v "$(pwd)/config:/app/config:ro" \
+  -v "$(pwd)/output:/app/output" \
+  catho_leads:latest
+```
+
+---
+
 ## (Opcional) Rodar testes
 
 Se você quiser validar rapidamente a instalação:
