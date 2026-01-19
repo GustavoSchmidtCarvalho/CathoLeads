@@ -170,3 +170,17 @@ python -m pytest -q
 - **`playwright` não encontrado**: confirme que o venv está ativo (`.venv` ativado) e rode `pip install -r requirements.txt`.
 - **Navegador não abre / erro de browser**: rode `playwright install` novamente.
 - **Ambiente sem interface gráfica (servidor)**: use `"headless": true` no config.
+
+---
+
+## Alternativa: gerar um executável (.exe) no Windows
+
+Se você quer rodar sem instalar Python no computador alvo, gere um pacote em `dist/CathoLeads/` com PyInstaller.
+
+No computador que vai fazer o build (Windows):
+
+```powershell
+./scripts/build_exe_windows.ps1
+```
+
+Depois, copie a pasta `dist/CathoLeads/` inteira para o outro computador e edite `dist/CathoLeads/config/config.json`.

@@ -1,18 +1,25 @@
 import json
+import os
+import shutil
+import sys
 from pathlib import Path
 from typing import Iterable
 from datetime import datetime
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
 from playwright.sync_api import sync_playwright
 
 
-LOG_FILE = Path(__file__).resolve().parent.parent / "output" / "logs" / "catho_leads.log"
+APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent.parent
+
+LOG_FILE = APP_ROOT / "output" / "logs" / "catho_leads.log"
 
 
 def log(msg: str) -> None:
     ts = datetime.now().isoformat(sep=" ", timespec="seconds")
     line = f"[{ts}] {msg}\n"
     try:
+        LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
         with LOG_FILE.open("a", encoding="utf-8") as f:
             f.write(line)
     except Exception:
@@ -20,24 +27,69 @@ def log(msg: str) -> None:
     print(line, end="")
 
 
-def load_creds(path: str | Path = "../config/config.json") -> dict:
-    script_dir = Path(__file__).resolve().parent
-    candidates = []
-    p = Path(path)
-    if p.is_absolute():
-        candidates.append(p)
+def _default_config_candidates() -> list[Path]:
+    rel_candidates = [
+        Path("config") / "config.user.json",
+        Path("config") / "config.json",
+    ]
+
+    candidates: list[Path] = []
+    for rel in rel_candidates:
+        candidates.append(APP_ROOT / rel)
+        candidates.append(Path.cwd() / rel)
+    return candidates
+
+
+def ensure_default_config_file() -> None:
+    cfg = APP_ROOT / "config" / "config.json"
+    if cfg.exists():
+        return
+
+    example = APP_ROOT / "config" / "config.example.json"
+    if example.exists():
+        cfg.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copyfile(example, cfg)
+        except Exception:
+            pass
+        log(
+            "Arquivo de configuração não encontrado. Criei 'config/config.json' a partir de "
+            "'config/config.example.json'. Edite suas credenciais e execute novamente."
+        )
     else:
-        candidates.append(script_dir / p)
-        candidates.append(Path.cwd() / p)
+        log("Arquivo de configuração não encontrado em 'config/config.json'. Crie-o e execute novamente.")
+
+    raise SystemExit(2)
+
+
+def load_creds(path: str | Path | None = None) -> dict:
+    candidates: list[Path] = []
+
+    if path is None:
+        candidates.extend(_default_config_candidates())
+    else:
+        p = Path(path)
+        if p.is_absolute():
+            candidates.append(p)
+        else:
+            candidates.append(APP_ROOT / p)
+            candidates.append(Path.cwd() / p)
 
     for candidate in candidates:
         if candidate.exists():
             with candidate.open(encoding="utf-8") as f:
                 return json.load(f)
 
-    raise FileNotFoundError(
-        "Credenciais não encontradas. Procurei em: " + ", ".join(str(c.resolve()) for c in candidates)
-    )
+    raise FileNotFoundError("Config não encontrado. Procurei em: " + ", ".join(str(c.resolve()) for c in candidates))
+
+
+def configure_playwright_browsers_path() -> None:
+    if os.environ.get("PLAYWRIGHT_BROWSERS_PATH"):
+        return
+
+    bundled = APP_ROOT / "ms-playwright"
+    if bundled.exists():
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(bundled)
 
 
 def try_selectors(page, selectors: Iterable[str], fill_value: str | None = None, click: bool = False) -> tuple[bool, str | None]:
@@ -91,7 +143,8 @@ def with_search_term(search_url: str, search_term: str) -> str:
 
 
 def main():
-    creds = load_creds("../config/config.json")
+    ensure_default_config_file()
+    creds = load_creds()
     url = creds.get("url")
     username = creds.get("username")
     password = creds.get("password")
@@ -150,6 +203,8 @@ def main():
     if isinstance(creds.get("submit_selector"), list):
         submit_selectors = creds.get("submit_selector") + submit_selectors
 
+    configure_playwright_browsers_path()
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=headless, slow_mo=50)
         page = browser.new_page()
@@ -182,7 +237,9 @@ def main():
 
         if not (ok_user and ok_pass and ok_submit):
             try:
-                page.screenshot(path=str(Path(__file__).resolve().parent.parent / 'output' / 'screenshots' / 'playwright_debug.png'))
+                screenshot_dir = APP_ROOT / 'output' / 'screenshots'
+                screenshot_dir.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot_dir / 'playwright_debug.png'))
             except Exception:
                 pass
         else:
@@ -440,7 +497,7 @@ def main():
                 
                 # Salvar dados em JSON
                 import json
-                output_dir = Path(__file__).resolve().parent.parent / "output" / "candidates"
+                output_dir = APP_ROOT / "output" / "candidates"
                 (output_dir / "json").mkdir(parents=True, exist_ok=True)
                 (output_dir / "csv").mkdir(parents=True, exist_ok=True)
                 (output_dir / "excel").mkdir(parents=True, exist_ok=True)
@@ -471,7 +528,9 @@ def main():
                 log(f"Erro ao coletar dados: {e}")
             
             try:
-                page.screenshot(path=str(Path(__file__).resolve().parent.parent / 'output' / 'screenshots' / 'search_results.png'))
+                screenshot_dir = APP_ROOT / 'output' / 'screenshots'
+                screenshot_dir.mkdir(parents=True, exist_ok=True)
+                page.screenshot(path=str(screenshot_dir / 'search_results.png'))
             except Exception:
                 pass
 

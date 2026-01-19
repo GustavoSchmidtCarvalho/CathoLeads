@@ -1,10 +1,10 @@
 {
   "url": "https://seguro.catho.com.br/signin/entrar?b2b=true",
-  "username": "",
-  "password": "",
+  "username": "SEU_EMAIL_AQUI",
+  "password": "SUA_SENHA_AQUI",
   "_comment_headless": "headless - Se true, o navegador roda em segundo plano (sem abrir janela). Se false, abre a janela do navegador para você acompanhar.",
   "headless": false,
-  "search_term": "",
-  "search_url": "",
+  "search_term": "vendedor",
+  "search_url": "https://www.catho.com.br/curriculos/busca/?pais_id=31&estado_id[25]=25&regiaoId[14]=14&cidade_id[783]=783",
   "num_candidatos": 50
 }

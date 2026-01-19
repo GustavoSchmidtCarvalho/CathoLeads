@@ -1,9 +1,11 @@
-Playwright Login Automations
+CathoLeads (Playwright)
 
-Project structure and quick start
+Estrutura e uso rápido
 
-- `src/playwright_login.py`: script principal que lê `config/login_config.json` e executa o login usando Playwright.
-- `config/login_config.json`: arquivo de configuração (url, username, password, headless).
+- `src/catho_leads.py`: script principal (login + busca + coleta e exportação).
+- `config/config.json`: configuração (sem credenciais reais no repositório).
+- `config/config.user.json`: (opcional) sua configuração local, não versionada.
+- `output/`: onde os resultados são gerados.
 - `tests/`: testes pytest básicos.
 
 Quick start
@@ -22,12 +24,14 @@ pip install -r requirements.txt
 python -m playwright install
 ```
 
-3. Configurar `config/login_config.json` com suas credenciais.
+3. Configure sua execução:
+
+- Edite `config/config.json` **ou** crie `config/config.user.json` (recomendado para não versionar credenciais).
 
 4. Executar script
 
 ```powershell
-python src\playwright_login.py
+python src\catho_leads.py
 ```
 
 5. Rodar testes
@@ -38,5 +42,19 @@ pytest -q
 
 Notes
 
-- `playwright_login.log` e `playwright_debug.png` serão gerados ao lado do script para ajudar na depuração.
-- Não inclua credenciais sensíveis no repositório público; use variáveis de ambiente ou segredos do GitHub Actions para CI.
+- Logs e screenshots ficam em `output/`.
+- Evite commitar credenciais; prefira `config/config.user.json` (ignorado pelo git).
+
+## Gerar executável (Windows)
+
+Você pode gerar um `.exe` usando PyInstaller.
+
+No PowerShell, na raiz do projeto:
+
+```powershell
+./scripts/build_exe_windows.ps1
+```
+
+O resultado fica em `dist/CathoLeads/`.
+
+Para facilitar, você também pode dar duplo clique em `dist/CathoLeads/run_catholeads.bat` (ele executa o `.exe` e abre o log ao final).

@@ -33,6 +33,9 @@ build/
 .env
 env.local
 
+# Config local (não versionar credenciais)
+config/config.user.json
+
 # Logs
 *.log
 
